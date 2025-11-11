@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.venv/
+.env
+.env.example
+# Node
+node_modules/
+/dist/
+*.log
+
+# Data outputs
+backend/data_outputs/
+data_outputs/
+
+# IDE/editor
+.vscode/
+.DS_Store
+
+# Misc
+*.swp

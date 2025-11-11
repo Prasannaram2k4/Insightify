@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pymongo
+scikit-learn
+pdfplumber
+PyPDF2
+requests
+python-multipart
