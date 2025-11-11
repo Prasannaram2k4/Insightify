@@ -112,14 +112,11 @@ Downloads a generated checklist by filename (served from `backend/data_outputs/`
 
 ## Screenshots
 
-Place your PNGs into `docs/screenshots/` with these exact filenames, then the images below will render on GitHub:
-
-- 1.png, 2.png, 3.png, 4.png, 5.png, 6.png, 7.png, 8.png, 9.png
 
 <table>
 	<tbody>
 		<tr>
-			<td><img src="docs/screenshots/1.png" alt="Insightify Screenshot 1" width="100%" /></td>
+			<td><img src="docs/screenshots/1.png" alt="Insightify Screenshot 1" width="200%" /></td>
 			<td><img src="docs/screenshots/2.png" alt="Insightify Screenshot 2" width="100%" /></td>
 			<td><img src="docs/screenshots/3.png" alt="Insightify Screenshot 3" width="100%" /></td>
 		</tr>
