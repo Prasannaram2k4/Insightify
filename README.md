@@ -112,20 +112,34 @@ Downloads a generated checklist by filename (served from `backend/data_outputs/`
 
 ## Screenshots
 
-Place your PNGs into `docs/screenshots/` with these exact filenames, then the images below will render on GitHub:
-
-- 1.png, 2.png, 3.png, 4.png, 5.png, 6.png, 7.png, 8.png, 9.png
+Sample Images Of Insightify
 
 <p>
-  <img src="docs/screenshots/1.png" alt="Insightify Screenshot 1" width="100%" />
-  <img src="docs/screenshots/2.png" alt="Insightify Screenshot 2" width="100%" />
-  <img src="docs/screenshots/3.png" alt="Insightify Screenshot 3" width="100%" />
-  <img src="docs/screenshots/4.png" alt="Insightify Screenshot 4" width="100%" />
-  <img src="docs/screenshots/5.png" alt="Insightify Screenshot 5" width="100%" />
-  <img src="docs/screenshots/6.png" alt="Insightify Screenshot 6" width="100%" />
-  <img src="docs/screenshots/7.png" alt="Insightify Screenshot 7" width="100%" />
-  <img src="docs/screenshots/8.png" alt="Insightify Screenshot 8" width="100%" />
-  <img src="docs/screenshots/9.png" alt="Insightify Screenshot 9" width="100%" />
+	<img src="docs/screenshots/1.png" alt="Insightify Screenshot 1" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/2.png" alt="Insightify Screenshot 2" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/3.png" alt="Insightify Screenshot 3" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/4.png" alt="Insightify Screenshot 4" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/5.png" alt="Insightify Screenshot 5" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/6.png" alt="Insightify Screenshot 6" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/7.png" alt="Insightify Screenshot 7" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/8.png" alt="Insightify Screenshot 8" width="100%" />
+</p>
+<p>
+	<img src="docs/screenshots/9.png" alt="Insightify Screenshot 9" width="100%" />
 </p>
 
 ---
