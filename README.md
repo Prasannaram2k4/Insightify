@@ -112,30 +112,23 @@ Downloads a generated checklist by filename (served from `backend/data_outputs/`
 
 ## Screenshots
 
+Place your PNGs into `docs/screenshots/` with these exact filenames, then the images below will render on GitHub:
 
+- 1.png, 2.png, 3.png, 4.png, 5.png, 6.png, 7.png, 8.png, 9.png
 
-| Step | Preview |
-|------|---------|
-| 1. Initial UI | ![Step 1 – Upload PDFs](docs/screenshots
-/1.png) |
-| 2. Upload UI| ![Step 2 – Ingest Started](docs/screenshots
-/2.png) |
-| 3. Choose File | ![Step 3 – Chunking](docs/screenshots
-/3.png) |
-| 4. Ingest Triggered | ![Step 4 – Embeddings](docs/screenshots
-/4.png) |
-| 5. Building FAISS Index | ![Step 5 – Index Build](docs/screenshots
-/5.png) |
-| 6. Type Question | ![Step 6 – Ready State](docs/screenshots
-/6.png) |
-| 7. Asking a Question | ![Step 7 – Query Input](docs/screenshots
-/7.png) |
-| 8. Retrieval Results | ![Step 8 – Retrieved Context](docs/screenshots
-/8.png) |
-| Final. Answer + Context | ![Final – Answer Display](docs/screenshots
-/9.png) |
+<p>
+	<img src="docs/screenshots/1.png" alt="Insightify Screenshot 1" width="100%" />
+	<img src="docs/screenshots/2.png" alt="Insightify Screenshot 2" width="100%" />
+	<img src="docs/screenshots/3.png" alt="Insightify Screenshot 3" width="100%" />
+	<img src="docs/screenshots/4.png" alt="Insightify Screenshot 4" width="100%" />
+	<img src="docs/screenshots/5.png" alt="Insightify Screenshot 5" width="100%" />
+	<img src="docs/screenshots/6.png" alt="Insightify Screenshot 6" width="100%" />
+	<img src="docs/screenshots/7.png" alt="Insightify Screenshot 7" width="100%" />
+	<img src="docs/screenshots/8.png" alt="Insightify Screenshot 8" width="100%" />
+	<img src="docs/screenshots/9.png" alt="Insightify Screenshot 9" width="100%" />
+</p>
 
-
+---
 
 ## Database (MongoDB)
 
