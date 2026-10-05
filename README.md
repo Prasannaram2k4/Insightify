@@ -66,17 +66,15 @@ Notes:
 - If `MONGO_URI` is omitted or not reachable, analysis still works but `/history` is unavailable.
 - If `HF_API_TOKEN` is omitted, interview questions will fall back to a curated local list.
 - `FRONTEND_ORIGINS`: comma-separated allowed browser origins; defaults to the local Vite origins.
-- Frontend `VITE_API_URL`: API origin for a deployed frontend, for example `https://insightify-api.onrender.com`. Leave unset for local development.
+- Frontend `VITE_API_URL`: optional API base URL override. Leave unset to use the same-origin `/api` route.
 
 ## Deploy a Live Demo
 
-The frontend is configured for Vercel and the API for Render. Deploy the API first, then deploy the frontend:
+The root `vercel.json` configures a Vercel multi-service project. The frontend is public; `/api/*` is handled by a frontend serverless proxy, and the FastAPI service stays internal behind a service binding.
 
-1. Create a Render Blueprint from this repository using `render.yaml`. Set `FRONTEND_ORIGINS` to the Vercel site's full origin, such as `https://insightify.vercel.app`.
-2. Create a Vercel project with the `frontend` directory as its root. Set `VITE_API_URL` to the Render API origin, such as `https://insightify-api.onrender.com`.
-3. Redeploy both services after setting those values. Open the Vercel site and choose **Load sample documents**, then **Analyze Match** to run sample inputs through the deployed API.
+Import the repository into Vercel from its root and keep the inferred service names and rewrites in `vercel.json`. No `VITE_API_URL` is needed for this setup. Add optional `MONGO_URI` and `HF_API_TOKEN` values to the FastAPI service's environment if required. Open the deployed site and choose **Try sample**, then **Analyze match** to exercise the deployed API.
 
-`MONGO_URI` and `HF_API_TOKEN` are optional. Without MongoDB, analysis and checklist downloads still work; without a Hugging Face token, interview questions use the built-in fallback. Render's default filesystem is ephemeral, so generated checklists are temporary. Keep production secrets in the hosting providers' environment settings, not in source control.
+`MONGO_URI` and `HF_API_TOKEN` are optional. Without MongoDB, analysis and checklist downloads still work; without a Hugging Face token, interview questions use the built-in fallback. Keep production secrets in the hosting provider's environment settings, not in source control. `render.yaml` remains available for a separate Render deployment.
 
 ---
 

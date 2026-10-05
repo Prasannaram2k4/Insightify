@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react'
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '')
 const apiUrl = path => `${API_BASE_URL}${path}`
 
 function DocumentDropzone({ id, title, description, file, icon: Icon, onChange, onError }) {
