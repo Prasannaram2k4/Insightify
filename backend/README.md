@@ -7,7 +7,7 @@
 ## Setup
 1. Create a virtual environment (recommended)
 2. Install dependencies
-3. Configure environment variables
+3. Optionally configure environment variables in `backend/.env` or in your hosting provider
 
 ```bash
 # from the repo root or backend folder
@@ -15,7 +15,7 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # already created in this project for convenience
+# create .env in this folder only if you need optional MongoDB or Hugging Face settings
 ```
 
 Update `.env` if needed:
@@ -33,4 +33,4 @@ API overview:
 - `GET /history?limit=20` — requires MongoDB
 - `GET /download/{fname}` — serves files saved under `data_outputs/`
 
-CORS is open for development. Restrict `allow_origins` in production.
+CORS origins are configured with `FRONTEND_ORIGINS`, a comma-separated list of allowed site origins. Local Vite origins are allowed by default; set the deployed frontend origin in production.

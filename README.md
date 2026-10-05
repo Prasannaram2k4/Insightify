@@ -13,7 +13,7 @@ Tech stack:
 
 Live development defaults:
 - API: http://localhost:8000
-- Frontend: http://localhost:5175
+- Frontend: http://localhost:5173
 
 ---
 
@@ -37,7 +37,7 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # then edit values as needed
+# optionally create backend/.env for MongoDB or Hugging Face settings
 uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -47,7 +47,7 @@ Frontend
 cd frontend
 npm install
 npm run dev
-# open the printed URL (typically http://localhost:5175)
+# open the printed URL (typically http://localhost:5173)
 ```
 
 ---
@@ -63,8 +63,20 @@ Backend (`backend/.env`):
 - HF_ALLOWED_MODELS: Comma‑separated list of allowed models. Example: `google/flan-t5-base,google/flan-t5-large,google/flan-t5-xl,bigscience/T0pp,google/t5-v1_1-base,google/flan-ul2`.
 
 Notes:
-- If `MONGO_URI` is omitted or not reachable, the app still works but `/history` will return an error.
+- If `MONGO_URI` is omitted or not reachable, analysis still works but `/history` is unavailable.
 - If `HF_API_TOKEN` is omitted, interview questions will fall back to a curated local list.
+- `FRONTEND_ORIGINS`: comma-separated allowed browser origins; defaults to the local Vite origins.
+- Frontend `VITE_API_URL`: API origin for a deployed frontend, for example `https://insightify-api.onrender.com`. Leave unset for local development.
+
+## Deploy a Live Demo
+
+The frontend is configured for Vercel and the API for Render. Deploy the API first, then deploy the frontend:
+
+1. Create a Render Blueprint from this repository using `render.yaml`. Set `FRONTEND_ORIGINS` to the Vercel site's full origin, such as `https://insightify.vercel.app`.
+2. Create a Vercel project with the `frontend` directory as its root. Set `VITE_API_URL` to the Render API origin, such as `https://insightify-api.onrender.com`.
+3. Redeploy both services after setting those values. Open the Vercel site and choose **Load sample documents**, then **Analyze Match** to run sample inputs through the deployed API.
+
+`MONGO_URI` and `HF_API_TOKEN` are optional. Without MongoDB, analysis and checklist downloads still work; without a Hugging Face token, interview questions use the built-in fallback. Render's default filesystem is ephemeral, so generated checklists are temporary. Keep production secrets in the hosting providers' environment settings, not in source control.
 
 ---
 

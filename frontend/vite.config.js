@@ -6,5 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    proxy: {
+      '/analyze': 'http://localhost:8000',
+      '/history': 'http://localhost:8000',
+      '/download': 'http://localhost:8000',
+    },
   },
 })

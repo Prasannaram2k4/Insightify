@@ -16,6 +16,8 @@ def extract_text_from_bytes(b, filename='file'):
             return b.decode('utf-8')
         except:
             return b.decode('latin-1', errors='ignore')
+    if not name.endswith('.pdf'):
+        raise ValueError('Only PDF and TXT files are supported.')
     if pdfplumber:
         try:
             from io import BytesIO as _BytesIO
@@ -34,12 +36,17 @@ def extract_text_from_bytes(b, filename='file'):
             except:
                 pass
         return '\n'.join(texts)
-    except Exception:
-        return b.decode('utf-8', errors='ignore')
+    except Exception as exc:
+        raise ValueError('Could not extract text from PDF. Use a valid, text-based PDF.') from exc
 
 def tfidf_similarity_score(text1, text2):
+    if not text1.strip() or not text2.strip():
+        return 0.0
     vec = TfidfVectorizer(stop_words='english', max_features=5000)
-    X = vec.fit_transform([text1, text2])
+    try:
+        X = vec.fit_transform([text1, text2])
+    except ValueError:
+        return 0.0
     cos = cosine_similarity(X[0:1], X[1:2])[0][0]
     return float(cos)
 
@@ -65,8 +72,13 @@ def parse_resume_sections(text):
     return sections
 
 def generate_keyword_suggestions(resume_text, jd_text, top_n=12):
+    if not resume_text.strip() or not jd_text.strip():
+        return []
     vec = TfidfVectorizer(stop_words='english', ngram_range=(1,2), max_features=1000)
-    X = vec.fit_transform([jd_text, resume_text])
+    try:
+        X = vec.fit_transform([jd_text, resume_text])
+    except ValueError:
+        return []
     feature_names = vec.get_feature_names_out()
     jd_vec = X[0].toarray()[0]
     top_idx = jd_vec.argsort()[::-1][:top_n*3]

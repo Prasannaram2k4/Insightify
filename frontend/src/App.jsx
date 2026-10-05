@@ -1,39 +1,100 @@
 
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
+import {
+  ArrowDownToLine,
+  ArrowRight,
+  BriefcaseBusiness,
+  Check,
+  FileText,
+  FileUp,
+  LoaderCircle,
+  ScanSearch,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  X,
+} from 'lucide-react'
 
-function ReactLogo({ size = 64 }){
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
+const apiUrl = path => `${API_BASE_URL}${path}`
+
+function DocumentDropzone({ id, title, description, file, icon: Icon, onChange, onError }) {
+  const [dragging, setDragging] = useState(false)
+
+  const acceptFile = nextFile => {
+    if (!nextFile) return
+    if (!/\.(pdf|txt)$/i.test(nextFile.name)) {
+      onError('Choose a PDF or TXT file.')
+      return
+    }
+    if (nextFile.size > 10 * 1024 * 1024) {
+      onError('Each file must be 10 MB or smaller.')
+      return
+    }
+    onError('')
+    onChange(nextFile)
+  }
+
   return (
-    <svg className="logo" width={size} height={size} viewBox="0 0 841.9 595.3" aria-hidden="true" focusable="false">
-      <g fill="none" stroke="#61DAFB" strokeWidth="30">
-        <ellipse rx="165" ry="381" transform="translate(420.9 296.5) rotate(60)"/>
-        <ellipse rx="165" ry="381" transform="translate(420.9 296.5) rotate(-60)"/>
-        <ellipse rx="165" ry="381" transform="translate(420.9 296.5) rotate(0)"/>
-      </g>
-      <circle cx="420.9" cy="296.5" r="35" fill="#61DAFB"/>
-    </svg>
+    <div className={`document-dropzone ${dragging ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}>
+      <label
+        className="dropzone-label"
+        htmlFor={id}
+        onDragOver={event => { event.preventDefault(); setDragging(true) }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={event => {
+          event.preventDefault()
+          setDragging(false)
+          acceptFile(event.dataTransfer.files[0])
+        }}
+      >
+        <input
+          id={id}
+          className="file-input"
+          type="file"
+          accept=".pdf,.txt"
+          onChange={event => {
+            acceptFile(event.target.files?.[0])
+            event.target.value = ''
+          }}
+        />
+        <span className="dropzone-icon"><Icon size={20} strokeWidth={1.8} /></span>
+        <span className="dropzone-copy">
+          <span className="dropzone-title">{title}</span>
+          <span className="dropzone-description">{file ? file.name : description}</span>
+        </span>
+        <span className="browse-action">{file ? 'Replace' : 'Browse'}</span>
+      </label>
+      {file && (
+        <div className="file-meta">
+          <span><Check size={13} /> Ready · {(file.size / 1024).toFixed(0)} KB</span>
+          <button className="clear-file" type="button" aria-label={`Remove ${title.toLowerCase()}`} onClick={() => onChange(null)}>
+            <X size={15} />
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 
 export default function App() {
-  // Sample data (provided by user) to render a demo result at the top of the page
-  const SAMPLE_RESUME = `Prasannaram R R +91 8778557651
-Final Year Undergraduate prasannaram978@gmail.com
+  const SAMPLE_RESUME = `Sample Candidate | Software Engineer
 Software Engineer GitHub Profile
 Portfolio Link LinkedIn Profile
 EDUCATION
-Bachelor of Engineering in Computer Science and Engineering 2022 – 2026
-VSB College of Engineering Technical Campus, Coimbatore CGPA: 8.5/10.0
+Bachelor of Engineering in Computer Science and Engineering, 2022–2026
+Sample University, CGPA: 8.5/10.0
 EXPERIENCE
-Software Engineering – AI & Full Stack Development Intern Jun 2025 – Oct 2025
-Evalbench On-Site
+Software Engineering – AI & Full Stack Development Intern, 2025
+Technology Company
 • Developed and optimized AI-powered web applications by building responsive front-end components using React.js, HTML, and JavaScript, and collaborating with backend engineers to enhance API performance and ensure seamless integration across full-stack systems.
 • Contributed to software engineering workflows through code reviews, debugging, and daily stand-ups, while implementing and maintaining REST APIs, applying modern backend development and AI integration practices.
 TECHNICAL PROJECTS
-Ragnify – AI Document Q&A System (Retrieval-Augmented Generation) [GitHub]
+Document Q&A System (Retrieval-Augmented Generation)
 Python, FastAPI, React.js, FAISS, Hugging Face Transformers, Docker
 • Built a Retrieval-Augmented Generation (RAG) system for intelligent, context-aware Q&A over PDFs using FastAPI, FAISS, and Hugging Face Transformers.
 • Designed a multi-provider LLM framework integrating OpenAI, Anthropic, and Ollama with a React-based interface and Dockerized backend for scalable local-first operation.
-MarketPulse — Stock Analytics & Portfolio Intelligence Platform [GitHub]
+Stock Analytics & Portfolio Intelligence Platform
 Node.js, Express.js, React.js, MongoDB, JWT, REST APIs, Recharts
 • Built a full-stack financial analytics platform using React.js and Recharts to visualize real-time market trends, portfolio performance, and stock insights with dynamic data updates.
 • Developed a scalable Node.js/Express backend featuring optimized RESTful APIs, secure JWT-based authentication, and efficient MongoDB data models for low-latency portfolio and watchlist management.
@@ -74,33 +135,12 @@ Preferred technical and professional experience
  * Exposure to distributed foundation model training
 * Familiarity of GPU architectures, NCCL and compilers / Pytorch Compile`
 
-  // Curated sample suggestions derived from JD (keywords likely missing or to emphasize)
-  const SAMPLE_SUGGESTIONS = [
-    'Pandas', 'NumPy', 'Data Structures', 'Algorithms', 'Linear Algebra', 'Probability', 'Statistics',
-    'Kubernetes', 'Openshift', 'VMware', 'Hyper-V', 'Monitoring and Logging',
-    'Model types: Dense / MoE / Mamba / Multimodal', 'PyTorch', 'FSDP', 'GPU optimization',
-    'Training stack internals', 'SFT', 'LoRA', 'RL', 'Triton', 'NCCL', 'PyTorch Compile'
-  ]
-
-  // Sample interview questions tailored to the JD
-  const SAMPLE_QUESTIONS = [
-    'Describe a project where you used Python data tooling (e.g., Pandas/NumPy) to analyze or transform data. What challenges did you face?',
-    'How do you approach optimizing a training pipeline on GPUs? Share specific techniques or tools you’ve used.',
-    'Explain the differences between Dense, MoE, and Mamba model families and when you might prefer each.',
-    'Walk through your experience with PyTorch FSDP or other distributed training strategies. What trade‑offs did you encounter?',
-    'How would you containerize and deploy a model service with Docker and Kubernetes? Outline the core steps.',
-    'What’s your strategy for monitoring and logging ML services in production?',
-    'Compare SFT, LoRA, and RL fine‑tuning approaches. When is each most appropriate?',
-    'How have you used CI/CD to automate model training or deployment workflows?'
-  ]
-
-  // A simple readable demo score (the backend uses TF‑IDF; this is just an illustrative value for the sample)
-  const SAMPLE_SCORE = 0.72
-
   const [resumeFile, setResumeFile] = useState(null)
   const [jdFile, setJdFile] = useState(null)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [demoLoaded, setDemoLoaded] = useState(false)
   const [useHF, setUseHF] = useState(false)
   const [modelChoice, setModelChoice] = useState('')
   const [customModel, setCustomModel] = useState('')
@@ -113,232 +153,193 @@ Preferred technical and professional experience
     'google/flan-ul2'
   ]
 
-  const effectiveModel = useMemo(() => {
-    return (modelChoice === 'custom' ? customModel : modelChoice) || ''
-  }, [modelChoice, customModel])
+  const effectiveModel = (modelChoice === 'custom' ? customModel : modelChoice) || ''
 
-  const analyze = async () => {
+  const loadDemo = () => {
+    setResumeFile(new File([SAMPLE_RESUME], 'sample-resume.txt', { type: 'text/plain' }))
+    setJdFile(new File([SAMPLE_JD], 'sample-job-description.txt', { type: 'text/plain' }))
+    setDemoLoaded(true)
+    setResult(null)
+    setError('')
+  }
+
+  const analyze = async event => {
+    event.preventDefault()
     if (!resumeFile || !jdFile) {
-      alert('Upload both files')
+      setError('Add both documents to start your analysis.')
       return
     }
     setLoading(true)
+    setError('')
     const form = new FormData()
     form.append('resume', resumeFile)
     form.append('jd', jdFile)
-  form.append('use_hf', useHF ? 'true' : 'false')
+    form.append('use_hf', useHF ? 'true' : 'false')
     if (useHF && effectiveModel) {
       form.append('model', effectiveModel)
     }
     try {
-      const res = await fetch('http://localhost:8000/analyze', { method: 'POST', body: form })
+      const res = await fetch(apiUrl('/analyze'), { method: 'POST', body: form })
       if (!res.ok) {
-        throw new Error(`Server responded ${res.status}`)
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.detail || `Server responded ${res.status}`)
       }
       const j = await res.json()
       setResult(j)
     } catch (e) {
-      alert('Request failed: ' + e)
-    } finally { setLoading(false) }
+      const message = e.message === 'Failed to fetch'
+        ? 'Could not reach the analysis service. Please try again in a moment.'
+        : e.message
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="container">
-      <header className="header">
-        <div className="logo-row">
-          <ReactLogo size={56} />
-          <h1 className="brand-title">Insightify</h1>
-          <ReactLogo size={56} />
-        </div>
-        <p className="subtitle">Resume ↔ Job Description match, suggestions, and interview prep</p>
+    <div className="app-shell">
+      <header className="topbar">
+        <a className="brand" href="#top" aria-label="Insightify home">
+          <span className="brand-mark"><ScanSearch size={19} strokeWidth={2} /></span>
+          <span className="brand-name">insightify<span>.</span></span>
+        </a>
+        <div className="topbar-meta"><span className="status-dot" /> RESUME MATCH STUDIO</div>
+        <button className="demo-button" type="button" onClick={loadDemo} disabled={loading}>
+          <Sparkles size={15} /> Try sample
+        </button>
       </header>
 
-      {/* Result Preview Section (labels adjusted to remove 'sample'/'demo') */}
-      <section className="card">
-        <div className="title-row">
-          <h2 className="card-title">Result Preview</h2>
-        </div>
-        <div className="results">
-          <div className="card">
-            <h3 className="card-title">Match Score</h3>
-            <div className="score">
-              <span className="score-number">{Math.round(SAMPLE_SCORE * 100)}%</span>
-              <span className="score-caption">Illustrative score</span>
-            </div>
-          </div>
-          <div className="card">
-            <h3 className="card-title">Top Suggestions</h3>
-            <ul className="list">
-              {SAMPLE_SUGGESTIONS.slice(0,12).map((s, i) => <li key={i}>{s}</li>)}
-            </ul>
-          </div>
-          <div className="card">
-            <h3 className="card-title">Interview Questions</h3>
-            <ol className="list numbered">
-              {SAMPLE_QUESTIONS.map((q, i) => (<li key={i}>{q}</li>))}
-            </ol>
-          </div>
-        </div>
-        <div className="grid" style={{marginTop:16}}>
-          <div className="card">
-            <h3 className="card-title">Resume</h3>
-            <pre className="pre-block">{SAMPLE_RESUME}</pre>
-          </div>
-          <div className="card">
-            <h3 className="card-title">Job Description</h3>
-            <pre className="pre-block">{SAMPLE_JD}</pre>
-          </div>
-        </div>
-      </section>
+      <main id="top" className="main-content">
+        <section className="intro">
+          <p className="eyebrow"><span>01</span> CAREER TOOLS / MATCH ANALYSIS</p>
+          <h1>Make your next move<br /><em>with a clearer picture.</em></h1>
+          <p className="intro-copy">See where your experience meets the role, and what to bring forward.</p>
+        </section>
 
-      <section className="card">
-        <h2 className="card-title">Upload Files</h2>
-        <div className="grid">
-          <div className="field">
-            <label className="label">Resume (PDF / TXT)</label>
-            <input className="input" type="file" onChange={e => setResumeFile(e.target.files[0])} accept=".pdf,.txt" />
-          </div>
-          <div className="field">
-            <label className="label">Job Description (PDF / TXT)</label>
-            <input className="input" type="file" onChange={e => setJdFile(e.target.files[0])} accept=".pdf,.txt" />
-          </div>
-        </div>
-
-        <div className="models">
-          <div className="model-picker">
-            <div className="label" style={{marginBottom:6}}>Choose a model</div>
-            <div className="chips">
-              {MODEL_PRESETS.map(m => (
-                <button
-                  key={m}
-                  type="button"
-                  className={`chip ${modelChoice === m ? 'selected' : ''}`}
-                  onClick={() => { setModelChoice(m); setUseHF(true); }}
-                  title={m}
-                >{m}</button>
-              ))}
-              <button
-                type="button"
-                className={`chip ${modelChoice === 'custom' ? 'selected' : ''}`}
-                onClick={() => { setModelChoice('custom'); setUseHF(!!customModel); }}
-              >Custom…</button>
+        <form className="analysis-workspace" onSubmit={analyze}>
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow"><span>01</span> YOUR DOCUMENTS</p>
+              <h2>What are we comparing?</h2>
             </div>
-            {modelChoice === 'custom' && (
-              <div className="model-controls" style={{marginTop:8}}>
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="Enter model id, e.g. google/flan-t5-xl"
-                  value={customModel}
-                  onChange={e => { setCustomModel(e.target.value); setUseHF(!!e.target.value); }}
-                />
+            <span className="file-format"><FileText size={14} /> PDF or TXT <i /> 10 MB max</span>
+          </div>
+
+          <div className="document-grid">
+            <DocumentDropzone
+              id="resume-upload"
+              title="Your resume"
+              description="Drop your resume here or browse"
+              file={resumeFile}
+              icon={FileUp}
+              onChange={file => { setResumeFile(file); setResult(null); setDemoLoaded(false) }}
+              onError={setError}
+            />
+            <div className="comparison-mark" aria-hidden="true"><span>+</span></div>
+            <DocumentDropzone
+              id="jd-upload"
+              title="The job description"
+              description="Drop the role details here or browse"
+              file={jdFile}
+              icon={BriefcaseBusiness}
+              onChange={file => { setJdFile(file); setResult(null); setDemoLoaded(false) }}
+              onError={setError}
+            />
+          </div>
+
+          <div className="workspace-controls">
+            <details className="advanced-settings">
+              <summary><SlidersHorizontal size={15} /> Question settings</summary>
+              <div className="settings-content">
+                <label className="toggle-row">
+                  <input type="checkbox" checked={useHF} onChange={event => setUseHF(event.target.checked)} />
+                  <span className="toggle-indicator" />
+                  <span><strong>Generate questions with a model</strong><small>Optional · uses your configured Hugging Face service</small></span>
+                </label>
+                {useHF && (
+                  <div className="model-fields">
+                    <label htmlFor="model-choice">Model</label>
+                    <select id="model-choice" value={modelChoice} onChange={event => setModelChoice(event.target.value)}>
+                      <option value="">Use server default</option>
+                      {MODEL_PRESETS.map(model => <option value={model} key={model}>{model}</option>)}
+                      <option value="custom">Custom model ID</option>
+                    </select>
+                    {modelChoice === 'custom' && (
+                      <input className="custom-model" type="text" placeholder="organization/model-name" value={customModel} onChange={event => setCustomModel(event.target.value)} />
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-            <p className="help">Model selection is optional. If none selected, analysis still runs locally without generation.</p>
-          </div>
-        </div>
+            </details>
 
-        <div className="actions">
-          <button className="btn" onClick={analyze} disabled={loading}>
-            {loading ? 'Analyzing…' : 'Analyze Match'}
-          </button>
-        </div>
-      </section>
-
-      <section className="card">
-        <h2 className="card-title">How it works</h2>
-        <div className="accordion">
-          <details>
-            <summary>What does the match score mean?</summary>
-            <div className="accordion-body">
-              <p>The score is a similarity between your resume and the job description using TF‑IDF cosine similarity.</p>
-              <ul className="info-list">
-                <li>0–30%: Low overlap — consider tailoring your resume to the role.</li>
-                <li>30–60%: Moderate — add missing skills/keywords and align experience bullets.</li>
-                <li>60–85%: Strong — you likely match many requirements; refine achievements.</li>
-                <li>85–100%: Very strong — high textual overlap; still ensure authenticity and clarity.</li>
-              </ul>
-              <p className="note">Note: This is a text‑based proxy, not a guarantee of ATS pass or fit.</p>
-            </div>
-          </details>
-
-          <details>
-            <summary>ATS suggestions</summary>
-            <div className="accordion-body">
-              <p>We surface important keywords from the job description that are missing or under‑emphasized in your resume.</p>
-              <ul className="info-list">
-                <li>Weigh these against your real experience — do not add anything you didn’t do.</li>
-                <li>Integrate keywords naturally into Skills and Experience bullet points.</li>
-                <li>Use standard section headers (Experience, Education, Skills, Projects).</li>
-                <li>Prefer text‑based PDF or DOCX; avoid images/tables that hide text from parsers.</li>
-              </ul>
-            </div>
-          </details>
-
-          <details>
-            <summary>Interview prep</summary>
-            <div className="accordion-body">
-              <p>Questions are tailored to the role and your resume. Use them to prepare concise answers.</p>
-              <ul className="info-list">
-                <li>Practice with the STAR method (Situation, Task, Action, Result).</li>
-                <li>Emphasize metrics (latency, throughput, revenue, adoption, cost).</li>
-                <li>If a model is selected, questions may be generated by that model; otherwise a curated set is used.</li>
-              </ul>
-            </div>
-          </details>
-
-          <details>
-            <summary>Extra tips for ATS & recruiters</summary>
-            <div className="accordion-body">
-              <ul className="info-list">
-                <li>Quantify: add numbers, timeframes, baselines (e.g., “−30% build time in 2 months”).</li>
-                <li>Consistency: one font, aligned dates, unified tense and person.</li>
-                <li>File hygiene: name like <code>Firstname_Lastname_Role_2025.pdf</code>.</li>
-                <li>Links: GitHub/portfolio with relevant projects and clear READMEs.</li>
-                <li>Avoid: text in images, dense tables, uncommon icons/graphics.</li>
-              </ul>
-            </div>
-          </details>
-        </div>
-      </section>
-
-      {result && (
-        <section className="results">
-          <div className="card">
-            <h2 className="card-title">Match Score</h2>
-            <div className="score">
-              <span className="score-number">{Math.round(result.match_score * 100)}%</span>
-              <span className="score-caption">Similarity via TF‑IDF cosine</span>
+            <div className="submit-row">
+              <span className="privacy-note"><ShieldCheck size={15} /> Your source files aren’t saved</span>
+              <button className="analyze-button" type="submit" disabled={loading || !resumeFile || !jdFile}>
+                {loading ? <><LoaderCircle className="spinner" size={17} /> Analyzing</> : <>Analyze match <ArrowRight size={17} /></>}
+              </button>
             </div>
           </div>
+          {error && <p className="error-message" role="alert">{error}</p>}
+          {demoLoaded && <p className="demo-loaded"><Check size={14} /> Sample documents loaded. Run the analysis when you’re ready.</p>}
+        </form>
 
-          <div className="card">
-            <h2 className="card-title">Top Suggestions</h2>
-            <ul className="list">
-              {result.suggestions && result.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-            </ul>
-          </div>
-
-          <div className="card">
-            <div className="title-row">
-              <h2 className="card-title">Interview Questions</h2>
-              {result.model_used && (
-                <span className="badge" title="Model used">{result.model_used}</span>
+        {result && (
+          <section className="results-section" aria-live="polite">
+            <div className="results-heading">
+              <div>
+                <p className="eyebrow"><span>02</span> YOUR READOUT</p>
+                <h2>Here’s where you stand.</h2>
+              </div>
+              {result.checklist_file && (
+                <a className="download-button" href={apiUrl('/download/' + encodeURIComponent(result.checklist_file.split('/').pop()))}>
+                  <ArrowDownToLine size={16} /> Download checklist
+                </a>
               )}
             </div>
-            <ol className="list numbered">
-              {result.interview_questions && result.interview_questions.map((q, i) => (<li key={i}>{q}</li>))}
-            </ol>
-          </div>
 
-          {result.checklist_file && (
-            <div className="card">
-              <h2 className="card-title">Checklist</h2>
-              <a className="link" href={'http://localhost:8000/download/' + result.checklist_file.split('/').pop()} target="_blank" rel="noopener noreferrer">Download Checklist</a>
+            <div className="results-grid">
+              <article className="result-panel score-panel">
+                <div className="score-copy">
+                  <p className="result-label">TEXTUAL OVERLAP</p>
+                  <h3>Match score</h3>
+                  <p className="result-note">A useful signal, not a hiring verdict.</p>
+                </div>
+                <div className="score-ring" style={{ '--score': `${Math.round(result.match_score * 100)}%` }} role="img" aria-label={`${Math.round(result.match_score * 100)} percent text match`}>
+                  <span>{Math.round(result.match_score * 100)}<small>%</small></span>
+                </div>
+              </article>
+
+              <article className="result-panel suggestions-panel">
+                <div className="panel-heading">
+                  <div><p className="result-label">BRING FORWARD</p><h3>Skills to highlight</h3></div>
+                  <span className="count-badge">{result.suggestions?.length || 0}</span>
+                </div>
+                {result.suggestions?.length ? (
+                  <ul className="suggestion-list">
+                    {result.suggestions.map((suggestion, index) => <li key={`${suggestion}-${index}`}><span>{String(index + 1).padStart(2, '0')}</span>{suggestion}</li>)}
+                  </ul>
+                ) : <p className="empty-result">Your resume already covers the main terms found in this description.</p>}
+              </article>
+
+              <article className="result-panel questions-panel">
+                <div className="panel-heading">
+                  <div><p className="result-label">PREPARE YOUR STORY</p><h3>Interview prompts</h3></div>
+                  {result.model_used && <span className="model-badge">{result.model_used}</span>}
+                </div>
+                <ol className="question-list">
+                  {result.interview_questions?.map((question, index) => <li key={`${question}-${index}`}><span>{String(index + 1).padStart(2, '0')}</span><p>{question}</p></li>)}
+                </ol>
+              </article>
             </div>
-          )}
-        </section>
-      )}
+            <p className="results-footnote"><ShieldCheck size={14} /> Match score measures text similarity. Review suggestions against your real experience.</p>
+          </section>
+        )}
+
+        <footer className="page-footer">
+          <span>INSIGHTIFY <i /> A sharper read on your next role.</span>
+          <span>PDF & TXT · Local text analysis</span>
+        </footer>
+      </main>
     </div>
   )
 }

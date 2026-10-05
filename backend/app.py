@@ -1,10 +1,12 @@
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 from typing import Optional, List
-import os, io, json, time
+from pathlib import Path
+from uuid import uuid4
+import os, json, time
 from dotenv import load_dotenv
 from utils_parse import extract_text_from_bytes, parse_resume_sections, generate_keyword_suggestions, generate_interview_questions_prompt, call_hf_generate, create_checklist_from_suggestions, tfidf_similarity_score
 from pymongo import MongoClient
@@ -14,12 +16,20 @@ MONGO_URI = os.getenv('MONGO_URI','')
 DB_NAME = os.getenv('DB_NAME','insightify')
 HF_MODEL = os.getenv('HF_MODEL','google/flan-t5-base')
 HF_ALLOWED_MODELS = [m.strip() for m in os.getenv('HF_ALLOWED_MODELS','').split(',') if m.strip()]
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+OUTPUT_DIR = Path(__file__).resolve().parent / 'data_outputs'
+DEFAULT_ORIGINS = 'http://localhost:5173,http://localhost:5175'
+FRONTEND_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('FRONTEND_ORIGINS', DEFAULT_ORIGINS).split(',')
+    if origin.strip()
+]
 
 app = FastAPI(title='Insightify API')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=FRONTEND_ORIGINS,
     allow_methods=['*'],
     allow_headers=['*'],
 )
@@ -44,6 +54,28 @@ class AnalyzeResponse(BaseModel):
     checklist_file: Optional[str]
     model_used: Optional[str]
 
+async def read_document(upload: UploadFile) -> str:
+    filename = upload.filename or ''
+    if Path(filename).suffix.lower() not in {'.pdf', '.txt'}:
+        raise HTTPException(status_code=400, detail='Only PDF and TXT files are supported.')
+    content = await upload.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail='Each file must be 10 MB or smaller.')
+    try:
+        text = extract_text_from_bytes(content, filename)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f'Could not read {filename}: {exc}') from exc
+    if not text.strip():
+        raise HTTPException(
+            status_code=422,
+            detail=f'No readable text found in {filename}. Use a text-based PDF or TXT file.',
+        )
+    return text
+
+@app.get('/health')
+def health():
+    return {'status': 'ok'}
+
 @app.post('/analyze', response_model=AnalyzeResponse)
 async def analyze(
     resume: UploadFile = File(...),
@@ -51,13 +83,7 @@ async def analyze(
     use_hf: bool = Form(False),
     model: Optional[str] = Form(None)
 ):
-    r_bytes = await resume.read()
-    j_bytes = await jd.read()
-    try:
-        resume_text = extract_text_from_bytes(r_bytes, resume.filename)
-        jd_text = extract_text_from_bytes(j_bytes, jd.filename)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f'Failed to extract text: {e}')
+    resume_text, jd_text = await read_document(resume), await read_document(jd)
     suggestions = generate_keyword_suggestions(resume_text, jd_text, top_n=12)
     interview_questions = []
     selected_model = None
@@ -81,13 +107,12 @@ async def analyze(
         interview_questions = generate_interview_questions_prompt(resume_text, jd_text, n=8, as_list=True)
 
     checklist_text = create_checklist_from_suggestions(suggestions)
-    fname = f'checklist_{int(time.time())}.txt'
-    out_path = os.path.join('data_outputs', fname)
-    os.makedirs('data_outputs', exist_ok=True)
-    with open(out_path, 'w', encoding='utf-8') as f:
+    fname = f'checklist_{int(time.time())}_{uuid4().hex[:8]}.txt'
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUTPUT_DIR / fname
+    with out_path.open('w', encoding='utf-8') as f:
         f.write(checklist_text)
 
-    record_id = None
     if db is not None:
         rec = {
             'resume_filename': resume.filename,
@@ -98,11 +123,9 @@ async def analyze(
             'model_used': selected_model
         }
         try:
-            res = db['analysis'].insert_one(rec)
-            record_id = str(res.inserted_id)
+            db['analysis'].insert_one(rec)
         except Exception as e:
             print('Failed to save to MongoDB:', e)
-            record_id = None
 
     score = 0.0
     try:
@@ -110,13 +133,16 @@ async def analyze(
     except:
         score = 0.0
 
-    return AnalyzeResponse(match_score=score, suggestions=suggestions, interview_questions=interview_questions, checklist_file=out_path, model_used=selected_model)
+    return AnalyzeResponse(match_score=score, suggestions=suggestions, interview_questions=interview_questions, checklist_file=fname, model_used=selected_model)
 
 @app.get('/history')
-def history(limit: int = 20):
+def history(limit: int = Query(default=20, ge=1, le=100)):
     if db is None:
         raise HTTPException(status_code=400, detail='MongoDB not configured. Set MONGO_URI in env.')
-    items = list(db['analysis'].find().sort('timestamp', -1).limit(limit))
+    try:
+        items = list(db['analysis'].find().sort('timestamp', -1).limit(limit))
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Analysis history is temporarily unavailable.') from exc
     for it in items:
         it['_id'] = str(it['_id'])
     return JSONResponse(content=items)
@@ -125,7 +151,7 @@ def history(limit: int = 20):
 def download(fname: str):
     # prevent path traversal by restricting to basename
     safe_name = os.path.basename(fname)
-    path = os.path.join('data_outputs', safe_name)
-    if os.path.exists(path):
+    path = OUTPUT_DIR / safe_name
+    if path.is_file():
         return FileResponse(path, media_type='text/plain', filename=safe_name)
     raise HTTPException(status_code=404, detail='File not found')
