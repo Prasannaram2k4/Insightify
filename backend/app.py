@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
+from fastapi import APIRouter, FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
@@ -54,6 +54,8 @@ class AnalyzeResponse(BaseModel):
     checklist_file: Optional[str]
     model_used: Optional[str]
 
+api_router = APIRouter()
+
 async def read_document(upload: UploadFile) -> str:
     filename = upload.filename or ''
     if Path(filename).suffix.lower() not in {'.pdf', '.txt'}:
@@ -72,11 +74,11 @@ async def read_document(upload: UploadFile) -> str:
         )
     return text
 
-@app.get('/health')
+@api_router.get('/health')
 def health():
     return {'status': 'ok'}
 
-@app.post('/analyze', response_model=AnalyzeResponse)
+@api_router.post('/analyze', response_model=AnalyzeResponse)
 async def analyze(
     resume: UploadFile = File(...),
     jd: UploadFile = File(...),
@@ -135,7 +137,7 @@ async def analyze(
 
     return AnalyzeResponse(match_score=score, suggestions=suggestions, interview_questions=interview_questions, checklist_file=fname, model_used=selected_model)
 
-@app.get('/history')
+@api_router.get('/history')
 def history(limit: int = Query(default=20, ge=1, le=100)):
     if db is None:
         raise HTTPException(status_code=400, detail='MongoDB not configured. Set MONGO_URI in env.')
@@ -147,7 +149,7 @@ def history(limit: int = Query(default=20, ge=1, le=100)):
         it['_id'] = str(it['_id'])
     return JSONResponse(content=items)
 
-@app.get('/download/{fname}')
+@api_router.get('/download/{fname}')
 def download(fname: str):
     # prevent path traversal by restricting to basename
     safe_name = os.path.basename(fname)
@@ -155,3 +157,6 @@ def download(fname: str):
     if path.is_file():
         return FileResponse(path, media_type='text/plain', filename=safe_name)
     raise HTTPException(status_code=404, detail='File not found')
+
+app.include_router(api_router)
+app.include_router(api_router, prefix='/api', include_in_schema=False)

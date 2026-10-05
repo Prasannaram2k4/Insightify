@@ -8,22 +8,14 @@
     },
     "frontend": {
       "root": "frontend",
-      "framework": "vite",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "insightify-api",
-          "format": "url",
-          "env": "INSIGHTIFY_API_URL"
-        }
-      ]
+      "framework": "vite"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": {
-        "service": "frontend"
+        "service": "insightify-api"
       }
     },
     {

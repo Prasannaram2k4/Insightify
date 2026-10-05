@@ -70,9 +70,9 @@ Notes:
 
 ## Deploy a Live Demo
 
-The root `vercel.json` configures a Vercel multi-service project. The frontend is public; `/api/*` is handled by a frontend serverless proxy, and the FastAPI service stays internal behind a service binding.
+The root `vercel.json` configures a Vercel multi-service project. The frontend is public at `/`; `/api/*` is routed to the FastAPI service. The API accepts both `/api/*` and unprefixed local paths.
 
-Import the repository into Vercel from its root and keep the inferred service names and rewrites in `vercel.json`. No `VITE_API_URL` is needed for this setup. Add optional `MONGO_URI` and `HF_API_TOKEN` values to the FastAPI service's environment if required. Open the deployed site and choose **Try sample**, then **Analyze match** to exercise the deployed API.
+Import the repository into Vercel from its root and keep the service names and rewrites in `vercel.json`. No `VITE_API_URL` is needed for this setup. Add optional `MONGO_URI` and `HF_API_TOKEN` values to the FastAPI service's environment if required. Open the deployed site and choose **Try sample**, then **Analyze match** to exercise the deployed API.
 
 `MONGO_URI` and `HF_API_TOKEN` are optional. Without MongoDB, analysis and checklist downloads still work; without a Hugging Face token, interview questions use the built-in fallback. Keep production secrets in the hosting provider's environment settings, not in source control. `render.yaml` remains available for a separate Render deployment.
 
