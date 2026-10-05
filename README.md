@@ -70,6 +70,8 @@ Notes:
 
 ## Deploy a Live Demo
 
+Live demo: [https://insightify-nu.vercel.app/](https://insightify-nu.vercel.app/)
+
 The root `vercel.json` configures a Vercel multi-service project. The frontend is public at `/`; `/api/*` is routed to the FastAPI service. The API accepts both `/api/*` and unprefixed local paths.
 
 Import the repository into Vercel from its root and keep the service names and rewrites in `vercel.json`. No `VITE_API_URL` is needed for this setup. Add optional `MONGO_URI` and `HF_API_TOKEN` values to the FastAPI service's environment if required. Open the deployed site and choose **Try sample**, then **Analyze match** to exercise the deployed API.
