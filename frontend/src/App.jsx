@@ -155,6 +155,17 @@ Preferred technical and professional experience
 
   const effectiveModel = (modelChoice === 'custom' ? customModel : modelChoice) || ''
 
+  const downloadChecklist = () => {
+    if (!result?.checklist_text) return
+    const checklist = new Blob([result.checklist_text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(checklist)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'insightify-resume-checklist.txt'
+    link.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
   const loadDemo = () => {
     setResumeFile(new File([SAMPLE_RESUME], 'sample-resume.txt', { type: 'text/plain' }))
     setJdFile(new File([SAMPLE_JD], 'sample-job-description.txt', { type: 'text/plain' }))
@@ -290,10 +301,10 @@ Preferred technical and professional experience
                 <p className="eyebrow"><span>02</span> YOUR READOUT</p>
                 <h2>Here’s where you stand.</h2>
               </div>
-              {result.checklist_file && (
-                <a className="download-button" href={apiUrl('/download/' + encodeURIComponent(result.checklist_file.split('/').pop()))}>
+              {result.checklist_text && (
+                <button className="download-button" type="button" onClick={downloadChecklist}>
                   <ArrowDownToLine size={16} /> Download checklist
-                </a>
+                </button>
               )}
             </div>
 

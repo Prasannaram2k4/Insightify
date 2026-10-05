@@ -95,7 +95,7 @@ Response (JSON):
 	"match_score": 0.72,
 	"suggestions": ["Pandas", "Kubernetes", "FSDP"],
 	"interview_questions": ["Q1", "Q2", "..."],
-	"checklist_file": "data_outputs/checklist_1762872607.txt",
+	"checklist_text": "Resume Improvement Checklist:\\n\\n- Add or emphasize: Pandas",
 	"model_used": "google/flan-t5-base"
 }
 ```
@@ -103,8 +103,7 @@ Response (JSON):
 ### GET /history?limit=20
 Returns recent analyses (requires MongoDB). Each item includes `_id`, timestamps, `suggestions`, `interview_questions`, and `model_used` if any.
 
-### GET /download/{fname}
-Downloads a generated checklist by filename (served from `backend/data_outputs/`).
+The response includes `checklist_text`; the frontend downloads it directly, so the API does not rely on writable server storage.
 
 ---
 

@@ -31,6 +31,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 API overview:
 - `POST /analyze` — multipart form: resume (file), jd (file), use_hf ("true"|"false")
 - `GET /history?limit=20` — requires MongoDB
-- `GET /download/{fname}` — serves files saved under `data_outputs/`
+
+The analyze response includes `checklist_text`; the frontend downloads it locally without server-side file storage. Routes are also available under `/api` for the Vercel deployment.
 
 CORS origins are configured with `FRONTEND_ORIGINS`, a comma-separated list of allowed site origins. Local Vite origins are allowed by default; set the deployed frontend origin in production.

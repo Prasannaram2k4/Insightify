@@ -1,11 +1,10 @@
 
 from fastapi import APIRouter, FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 from pathlib import Path
-from uuid import uuid4
 import os, json, time
 from dotenv import load_dotenv
 from utils_parse import extract_text_from_bytes, parse_resume_sections, generate_keyword_suggestions, generate_interview_questions_prompt, call_hf_generate, create_checklist_from_suggestions, tfidf_similarity_score
@@ -17,7 +16,6 @@ DB_NAME = os.getenv('DB_NAME','insightify')
 HF_MODEL = os.getenv('HF_MODEL','google/flan-t5-base')
 HF_ALLOWED_MODELS = [m.strip() for m in os.getenv('HF_ALLOWED_MODELS','').split(',') if m.strip()]
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
-OUTPUT_DIR = Path(__file__).resolve().parent / 'data_outputs'
 DEFAULT_ORIGINS = 'http://localhost:5173,http://localhost:5175'
 FRONTEND_ORIGINS = [
     origin.strip()
@@ -51,7 +49,7 @@ class AnalyzeResponse(BaseModel):
     match_score: float
     suggestions: List[str]
     interview_questions: List[str]
-    checklist_file: Optional[str]
+    checklist_text: str
     model_used: Optional[str]
 
 api_router = APIRouter()
@@ -109,11 +107,6 @@ async def analyze(
         interview_questions = generate_interview_questions_prompt(resume_text, jd_text, n=8, as_list=True)
 
     checklist_text = create_checklist_from_suggestions(suggestions)
-    fname = f'checklist_{int(time.time())}_{uuid4().hex[:8]}.txt'
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = OUTPUT_DIR / fname
-    with out_path.open('w', encoding='utf-8') as f:
-        f.write(checklist_text)
 
     if db is not None:
         rec = {
@@ -135,7 +128,7 @@ async def analyze(
     except:
         score = 0.0
 
-    return AnalyzeResponse(match_score=score, suggestions=suggestions, interview_questions=interview_questions, checklist_file=fname, model_used=selected_model)
+    return AnalyzeResponse(match_score=score, suggestions=suggestions, interview_questions=interview_questions, checklist_text=checklist_text, model_used=selected_model)
 
 @api_router.get('/history')
 def history(limit: int = Query(default=20, ge=1, le=100)):
@@ -148,15 +141,6 @@ def history(limit: int = Query(default=20, ge=1, le=100)):
     for it in items:
         it['_id'] = str(it['_id'])
     return JSONResponse(content=items)
-
-@api_router.get('/download/{fname}')
-def download(fname: str):
-    # prevent path traversal by restricting to basename
-    safe_name = os.path.basename(fname)
-    path = OUTPUT_DIR / safe_name
-    if path.is_file():
-        return FileResponse(path, media_type='text/plain', filename=safe_name)
-    raise HTTPException(status_code=404, detail='File not found')
 
 app.include_router(api_router)
 app.include_router(api_router, prefix='/api', include_in_schema=False)
